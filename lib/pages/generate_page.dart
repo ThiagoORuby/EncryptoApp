@@ -23,6 +23,7 @@ class _GeneratePageState extends State<GeneratePage> {
   final _form3 = GlobalKey<FormState>();
   final _valor3 = TextEditingController();
   var _isLoading = false;
+  var texto = '';
   Map<String, dynamic> keys = {};
 
   primeInput(String placeholder, final form, final valor) {
@@ -40,9 +41,9 @@ class _GeneratePageState extends State<GeneratePage> {
               prefixIcon: Icon(Icons.numbers)),
           validator: (value) {
             if (value!.isEmpty) {
-              return "campo vazio";
+              return "Empty field";
             } else if (isPrime(int.parse(value)) == 0) {
-              return "O valor não é primo";
+              return "The value is not a prime number";
             } else {
               return null;
             }
@@ -79,6 +80,25 @@ class _GeneratePageState extends State<GeneratePage> {
     );
   }
 
+  _write(String text) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final File file = File('${directory.path}/chave_publica.txt');
+    await file.writeAsString(text);
+  }
+
+  _read() async {
+    String text = '';
+    try {
+      final Directory directory = await getApplicationDocumentsDirectory();
+      final File file = File('${directory.path}/chave_publica.txt');
+      text = await file.readAsString();
+      print("to aqui");
+    } catch (e) {
+      print("Couldn't read file");
+    }
+    return text;
+  }
+
   // Generate key
   generate_key() async {
     if (_form1.currentState!.validate() && _form2.currentState!.validate()) {
@@ -104,6 +124,9 @@ class _GeneratePageState extends State<GeneratePage> {
       setState(() {
         _isLoading = false;
       });
+      _write("${keys['n']}, ${keys['e']}");
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Saving public keys in 'chaves.txt'")));
       //_showMyDialog();
       return resp;
     }
@@ -111,70 +134,84 @@ class _GeneratePageState extends State<GeneratePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: Text("Generate Public Key")),
-        body: Form(
-            child: Padding(
-          padding: EdgeInsets.all(24),
-          child: SingleChildScrollView(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: 100,
-                  ),
-                  Text(
-                      "Choose 2 prime numbers (p and q) and another number (e) who is coprime with (p - 1) x (q - 1)",
-                      style: TextStyle(fontSize: 18),
-                      textAlign: TextAlign.center),
-                  SizedBox(
-                    height: 36,
-                  ),
-                  primeInput("Digite um primo p", _form1, _valor1),
-                  SizedBox(
-                    height: 36,
-                  ),
-                  primeInput("Digite um primo q", _form2, _valor2),
-                  SizedBox(
-                    height: 36,
-                  ),
-                  primeInput("Digite um valor e", _form3, _valor3),
-                  Container(
-                    alignment: Alignment.bottomCenter,
-                    margin: EdgeInsets.only(top: 24),
-                    child: ElevatedButton(
-                        onPressed: (() {
-                          generate_key();
-                        }),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          // ignore: prefer_const_literals_to_create_immutables
-                          children: [
-                            Icon(Icons.key),
-                            Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Text(
-                                'Generate Keys',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            )
-                          ],
-                        )),
-                  ),
-                  SizedBox(
-                    height: 24,
-                  ),
-                  (_isLoading)
-                      ? Center(child: CircularProgressIndicator())
-                      : (keys.isEmpty)
-                          ? SizedBox()
-                          : Center(
-                              child: SelectableText(
-                                  "n = ${keys['n']}, e = ${keys['e']}",
-                                  style: TextStyle(fontSize: 22)))
-                ]),
-          ),
-        )));
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+          appBar: AppBar(title: Text("Generate Public Key")),
+          body: Form(
+              child: Padding(
+            padding: EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: 100,
+                    ),
+                    Text(
+                        "Choose 2 prime numbers (p and q) and another number (e) who is coprime with (p - 1) x (q - 1)",
+                        style: TextStyle(fontSize: 18),
+                        textAlign: TextAlign.center),
+                    SizedBox(
+                      height: 36,
+                    ),
+                    primeInput("Type a prime number p", _form1, _valor1),
+                    SizedBox(
+                      height: 36,
+                    ),
+                    primeInput("Type a prime number q", _form2, _valor2),
+                    SizedBox(
+                      height: 36,
+                    ),
+                    primeInput("Type the e value", _form3, _valor3),
+                    Container(
+                      alignment: Alignment.bottomCenter,
+                      margin: EdgeInsets.only(top: 24),
+                      child: ElevatedButton(
+                          onPressed: (() {
+                            generate_key();
+                          }),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            // ignore: prefer_const_literals_to_create_immutables
+                            children: [
+                              Icon(Icons.key),
+                              Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text(
+                                  'Generate Keys',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              )
+                            ],
+                          )),
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    (_isLoading)
+                        ? Center(child: CircularProgressIndicator())
+                        : (keys.isEmpty)
+                            ? SizedBox()
+                            : Center(
+                                child: ListBody(
+                                children: [
+                                  SelectableText(
+                                      "Your n value is: ${keys['n']}",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold)),
+                                  SelectableText(
+                                      "Your e value is: ${keys['e']}",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold))
+                                ],
+                              ))
+                  ]),
+            ),
+          ))),
+    );
   }
 }
