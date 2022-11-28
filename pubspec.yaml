@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=2.18.0 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -37,6 +37,19 @@ dependencies:
   http: ^0.13.5
   path_provider: ^2.0.11
   file_picker: ^5.2.2
+  internet_connection_checker: ^1.0.0+1
+  flutter_native_splash: ^2.2.16
+  flutter_launcher_icons: ^0.11.0
+
+flutter_icons:
+  image_path: "assets/app/icon.png"
+  android: "launcher_icon"
+  adaptive_icon_foreground: "assets/app/icon.png"
+
+flutter_native_splash:
+  color: "#000000"
+  image: "assets/app/icon.png"
+  android: true
 
 dev_dependencies:
   flutter_test:

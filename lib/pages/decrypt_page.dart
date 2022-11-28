@@ -76,10 +76,42 @@ class _DecryptPageState extends State<DecryptPage> {
         ));
   }
 
-  _write(String text) async {
+  _write(String text, context) async {
     final Directory directory = await getApplicationDocumentsDirectory();
     final File file = File('${directory.path}/mensagem_decriptada.txt');
     await file.writeAsString(text);
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text("Saving decrypted message in 'mensagem_decriptada.txt'")));
+  }
+
+  // PopUp
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Failed to connect!'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Check your internet connection and try again'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Modal bottom sheet
@@ -120,7 +152,7 @@ class _DecryptPageState extends State<DecryptPage> {
                     height: 36,
                   ),
                   OutlinedButton(
-                      onPressed: () => {_write(decrypted)},
+                      onPressed: () => {_write(decrypted, context)},
                       child: Text(
                         "Save as .txt file",
                         style: TextStyle(fontSize: 16),
@@ -149,19 +181,29 @@ class _DecryptPageState extends State<DecryptPage> {
         "e": int.parse(_valor3.text)
       };
       print(data);
-      http.Response resp = await http.post(Uri.parse(uri),
-          body: json.encode(data),
-          headers: {HttpHeaders.contentTypeHeader: 'application/json'});
-      int statusCode = resp.statusCode;
-      String responseBody = resp.body;
-      print(statusCode);
-      print(responseBody);
-      decrypted = jsonDecode(responseBody)['message'];
+      try {
+        http.Response resp = await http.post(Uri.parse(uri),
+            body: json.encode(data),
+            headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+        int statusCode = resp.statusCode;
+        String responseBody = resp.body;
+        print(statusCode);
+        print(responseBody);
+
+        if (statusCode != 200) {
+          decrypted =
+              "There are something wrong with your keys or crypted message";
+        } else {
+          decrypted = jsonDecode(responseBody)['message'];
+        }
+        _showMyModal();
+      } catch (e) {
+        _showMyDialog();
+      }
       setState(() {
         isLoading = false;
       });
-      _showMyModal();
-      return resp;
+      return 1;
     }
   }
 
@@ -198,7 +240,7 @@ class _DecryptPageState extends State<DecryptPage> {
                       height: 100,
                     ),
                     Text(
-                        "Choose a crypted message to be decrypt and put on with the RSA private keys values",
+                        "Choose a crypted message to be decrypted and type the RSA private keys values",
                         style: TextStyle(fontSize: 18),
                         textAlign: TextAlign.center),
                     SizedBox(

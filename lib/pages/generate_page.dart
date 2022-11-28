@@ -83,18 +83,17 @@ class _GeneratePageState extends State<GeneratePage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Here are your public keys!'),
+          title: const Text('Failed to connect!'),
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                Text('This is a demo alert dialog.'),
-                SelectableText("n = 113 e = 5", style: TextStyle(fontSize: 20))
+                Text('Check your internet connection and try again'),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Approve'),
+              child: const Text('close'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -141,23 +140,27 @@ class _GeneratePageState extends State<GeneratePage> {
         "q": int.parse(_valor2.text),
         "e": int.parse(_valor3.text)
       };
-      http.Response resp = await http.post(
-          Uri.parse('https://encrypto-api.herokuapp.com/generate_key'),
-          body: json.encode(data),
-          headers: {HttpHeaders.contentTypeHeader: 'application/json'});
-      int statusCode = resp.statusCode;
-      String responseBody = resp.body;
-      print(statusCode);
-      print(responseBody);
-      keys = jsonDecode(responseBody);
+      try {
+        http.Response resp = await http.post(
+            Uri.parse('https://encrypto-api.herokuapp.com/generate_key'),
+            body: json.encode(data),
+            headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+        int statusCode = resp.statusCode;
+        String responseBody = resp.body;
+        print(statusCode);
+        print(responseBody);
+        keys = jsonDecode(responseBody);
+        _write("${keys['n']}, ${keys['e']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Saving public keys in 'chaves.txt'")));
+      } catch (e) {
+        _showMyDialog();
+      }
       setState(() {
         _isLoading = false;
       });
-      _write("${keys['n']}, ${keys['e']}");
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Saving public keys in 'chaves.txt'")));
       //_showMyDialog();
-      return resp;
+      return 1;
     }
   }
 
@@ -179,7 +182,7 @@ class _GeneratePageState extends State<GeneratePage> {
                       height: 100,
                     ),
                     Text(
-                        "Choose 2 prime numbers (p and q) and another number (e) who is coprime with (p - 1) x (q - 1)",
+                        "Choose 2 prime numbers (p and q) and another number (e) which is coprime with (p - 1) x (q - 1)",
                         style: TextStyle(fontSize: 18),
                         textAlign: TextAlign.center),
                     SizedBox(

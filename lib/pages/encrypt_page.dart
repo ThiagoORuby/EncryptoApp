@@ -48,10 +48,42 @@ class _EncryptPageState extends State<EncryptPage> {
         ));
   }
 
-  _write(String text) async {
+  _write(String text, context) async {
     final Directory directory = await getApplicationDocumentsDirectory();
-    final File file = File('${directory.path}/mensagem_encriptada.txt');
+    final File file = File('${directory.path}/mensagem_criptografada.txt');
     await file.writeAsString(text);
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text("Saving crypted message in 'mensagem_criptografada.txt'")));
+  }
+
+  // PopUp
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Failed to connect!'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Check your internet connection and try again'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Modal bottom sheet
@@ -92,7 +124,7 @@ class _EncryptPageState extends State<EncryptPage> {
                     height: 36,
                   ),
                   OutlinedButton(
-                      onPressed: () => {_write(crypted)},
+                      onPressed: () => {_write(crypted, context)},
                       child: Text(
                         "Save as .txt file",
                         style: TextStyle(fontSize: 16),
@@ -118,20 +150,28 @@ class _EncryptPageState extends State<EncryptPage> {
         "e": int.parse(_valor3.text)
       };
       print(data);
-      http.Response resp = await http.post(Uri.parse(uri),
-          body: json.encode(data),
-          headers: {HttpHeaders.contentTypeHeader: 'application/json'});
-      int statusCode = resp.statusCode;
-      String responseBody = resp.body;
-      print(statusCode);
-      print(responseBody);
-      crypted = jsonDecode(responseBody)['crypted'];
-      print(crypted);
+      try {
+        http.Response resp = await http.post(Uri.parse(uri),
+            body: json.encode(data),
+            headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+        int statusCode = resp.statusCode;
+        String responseBody = resp.body;
+        print(statusCode);
+        print(responseBody);
+        if (statusCode != 200) {
+          crypted = "There are something wrong with yours keys";
+        } else {
+          crypted = jsonDecode(responseBody)['crypted'];
+        }
+        print(crypted);
+        _showMyModal();
+      } catch (e) {
+        _showMyDialog();
+      }
       setState(() {
         isLoading = false;
       });
-      _showMyModal();
-      return resp;
+      return 1;
     }
   }
 
@@ -165,7 +205,7 @@ class _EncryptPageState extends State<EncryptPage> {
                       height: 100,
                     ),
                     Text(
-                        "Choose a message to be encrypt and put it with the RSA public key values",
+                        "Choose a message to be encrypted and type the RSA public key values",
                         style: TextStyle(fontSize: 18),
                         textAlign: TextAlign.center),
                     SizedBox(
