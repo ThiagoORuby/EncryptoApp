@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -22,6 +22,8 @@ class _GeneratePageState extends State<GeneratePage> {
   final _valor2 = TextEditingController();
   final _form3 = GlobalKey<FormState>();
   final _valor3 = TextEditingController();
+  var _isLoading = false;
+  Map<String, dynamic> keys = {};
 
   primeInput(String placeholder, final form, final valor) {
     return Form(
@@ -60,7 +62,7 @@ class _GeneratePageState extends State<GeneratePage> {
             child: ListBody(
               children: const <Widget>[
                 Text('This is a demo alert dialog.'),
-                Text('Would you like to approve of this message?'),
+                SelectableText("n = 113 e = 5", style: TextStyle(fontSize: 20))
               ],
             ),
           ),
@@ -80,8 +82,11 @@ class _GeneratePageState extends State<GeneratePage> {
   // Generate key
   generate_key() async {
     if (_form1.currentState!.validate() && _form2.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
       print("Funfou");
-      final uri = 'https://encrypto-api.herokuapp.com/generate_key';
+      final uri = 'https://encrypto-api-com.onrender.com/generate_key';
       Map<String, int> data = {
         "p": int.parse(_valor1.text),
         "q": int.parse(_valor2.text),
@@ -95,7 +100,11 @@ class _GeneratePageState extends State<GeneratePage> {
       String responseBody = resp.body;
       print(statusCode);
       print(responseBody);
-      _showMyDialog();
+      keys = jsonDecode(responseBody);
+      setState(() {
+        _isLoading = false;
+      });
+      //_showMyDialog();
       return resp;
     }
   }
@@ -152,7 +161,18 @@ class _GeneratePageState extends State<GeneratePage> {
                             )
                           ],
                         )),
-                  )
+                  ),
+                  SizedBox(
+                    height: 24,
+                  ),
+                  (_isLoading)
+                      ? Center(child: CircularProgressIndicator())
+                      : (keys.isEmpty)
+                          ? SizedBox()
+                          : Center(
+                              child: SelectableText(
+                                  "n = ${keys['n']}, e = ${keys['e']}",
+                                  style: TextStyle(fontSize: 22)))
                 ]),
           ),
         )));
