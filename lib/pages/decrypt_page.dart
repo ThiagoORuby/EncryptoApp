@@ -41,8 +41,8 @@ class _DecryptPageState extends State<DecryptPage> {
 
   coprimeValidate(value) {
     if (value!.isEmpty) {
-      print(BigInt.parse(_valor1.text));
-      print(BigInt.parse(_valor2.text));
+      //print(BigInt.parse(_valor1.text));
+      //print(BigInt.parse(_valor2.text));
       return "Empty field";
     } else if (_valor1.text.isEmpty || _valor2.text.isEmpty) {
       return "fill the prime numbers fields";
