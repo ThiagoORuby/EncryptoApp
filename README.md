@@ -1,5 +1,7 @@
 # Encrypto App
 
+![](doc/image.png)
+
 A flutter app that generates keys, encrypts and decrypts messages using the RSA method.
 
 #### Group Members
