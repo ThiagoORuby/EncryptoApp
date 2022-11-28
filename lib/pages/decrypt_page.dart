@@ -30,6 +30,8 @@ class _DecryptPageState extends State<DecryptPage> {
   primeValidate(value) {
     if (value!.isEmpty) {
       return "Empty field";
+    } else if (value.length > 30) {
+      return null;
     } else if (isPrime(BigInt.parse(value)) == 0) {
       return "The value is not a prime number";
     } else {
@@ -44,6 +46,8 @@ class _DecryptPageState extends State<DecryptPage> {
       return "Empty field";
     } else if (_valor1.text.isEmpty || _valor2.text.isEmpty) {
       return "fill the prime numbers fields";
+    } else if (_valor1.text.length > 30 || _valor2.text.length > 30) {
+      return null;
     } else if (mdc(
             BigInt.parse(value),
             (BigInt.parse(_valor1.text) - BigInt.one) *
@@ -51,6 +55,7 @@ class _DecryptPageState extends State<DecryptPage> {
         BigInt.one) {
       return "The value is not a coprime number";
     } else {
+      print("Tamanho: ${_valor1.text.length}");
       return null;
     }
   }
@@ -176,9 +181,9 @@ class _DecryptPageState extends State<DecryptPage> {
       final uri = 'https://encrypto-api-com.onrender.com/decrypting';
       Map<String, dynamic> data = {
         "crypted": _valor0.text,
-        "p": int.parse(_valor1.text),
-        "q": int.parse(_valor2.text),
-        "e": int.parse(_valor3.text)
+        "p": _valor1.text,
+        "q": _valor2.text,
+        "e": _valor3.text
       };
       print(data);
       try {

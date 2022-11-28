@@ -44,6 +44,8 @@ class _GeneratePageState extends State<GeneratePage> {
       return "Empty field";
     } else if (_valor1.text.isEmpty || _valor2.text.isEmpty) {
       return "fill the prime numbers fields";
+    } else if (_valor1.text.length > 30 || _valor2.text.length > 30) {
+      return null;
     } else if (mdc(
             BigInt.parse(value),
             (BigInt.parse(_valor1.text) - BigInt.one) *
@@ -135,15 +137,15 @@ class _GeneratePageState extends State<GeneratePage> {
       print(mdc(BigInt.from(2), BigInt.from(12 * 16)) == BigInt.one);
       //print(isPrime(221));
       final uri = 'https://encrypto-api-com.onrender.com/generate_key';
-      Map<String, int> data = {
-        "p": int.parse(_valor1.text),
-        "q": int.parse(_valor2.text),
-        "e": int.parse(_valor3.text)
+      Map<String, String> data = {
+        "p": _valor1.text,
+        "q": _valor2.text,
+        "e": _valor3.text
       };
+      print(data);
       try {
-        http.Response resp = await http.post(
-            Uri.parse('https://encrypto-api.herokuapp.com/generate_key'),
-            body: json.encode(data),
+        http.Response resp = await http.post(Uri.parse(uri),
+            body: jsonEncode(data),
             headers: {HttpHeaders.contentTypeHeader: 'application/json'});
         int statusCode = resp.statusCode;
         String responseBody = resp.body;

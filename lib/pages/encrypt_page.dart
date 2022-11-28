@@ -146,8 +146,8 @@ class _EncryptPageState extends State<EncryptPage> {
       final uri = 'https://encrypto-api-com.onrender.com/encrypting';
       Map<String, dynamic> data = {
         "message": _valor1.text,
-        "n": int.parse(_valor2.text),
-        "e": int.parse(_valor3.text)
+        "n": _valor2.text,
+        "e": _valor3.text
       };
       print(data);
       try {
