@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:core';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +27,35 @@ class _GeneratePageState extends State<GeneratePage> {
   var texto = '';
   Map<String, dynamic> keys = {};
 
-  primeInput(String placeholder, final form, final valor) {
+  primeValidate(value) {
+    if (value!.isEmpty) {
+      return "Empty field";
+    } else if (isPrime(BigInt.parse(value)) == 0) {
+      return "The value is not a prime number";
+    } else {
+      return null;
+    }
+  }
+
+  coprimeValidate(value) {
+    if (value!.isEmpty) {
+      print(BigInt.parse(_valor1.text));
+      print(BigInt.parse(_valor2.text));
+      return "Empty field";
+    } else if (_valor1.text.isEmpty || _valor2.text.isEmpty) {
+      return "fill the prime numbers fields";
+    } else if (mdc(
+            BigInt.parse(value),
+            (BigInt.parse(_valor1.text) - BigInt.one) *
+                (BigInt.parse(_valor2.text) - BigInt.one)) !=
+        BigInt.one) {
+      return "The value is not a coprime number";
+    } else {
+      return null;
+    }
+  }
+
+  primeInput(String placeholder, final form, final valor, int isCoprime) {
     return Form(
         key: form,
         child: TextFormField(
@@ -40,13 +69,9 @@ class _GeneratePageState extends State<GeneratePage> {
               labelText: placeholder,
               prefixIcon: Icon(Icons.numbers)),
           validator: (value) {
-            if (value!.isEmpty) {
-              return "Empty field";
-            } else if (isPrime(int.parse(value)) == 0) {
-              return "The value is not a prime number";
-            } else {
-              return null;
-            }
+            return (isCoprime == 1)
+                ? coprimeValidate(value)
+                : primeValidate(value);
           },
         ));
   }
@@ -101,11 +126,15 @@ class _GeneratePageState extends State<GeneratePage> {
 
   // Generate key
   generate_key() async {
-    if (_form1.currentState!.validate() && _form2.currentState!.validate()) {
+    if (_form1.currentState!.validate() &&
+        _form2.currentState!.validate() &&
+        _form3.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
       print("Funfou");
+      print(mdc(BigInt.from(2), BigInt.from(12 * 16)) == BigInt.one);
+      //print(isPrime(221));
       final uri = 'https://encrypto-api-com.onrender.com/generate_key';
       Map<String, int> data = {
         "p": int.parse(_valor1.text),
@@ -156,15 +185,15 @@ class _GeneratePageState extends State<GeneratePage> {
                     SizedBox(
                       height: 36,
                     ),
-                    primeInput("Type a prime number p", _form1, _valor1),
+                    primeInput("Type a prime number p", _form1, _valor1, 0),
                     SizedBox(
                       height: 36,
                     ),
-                    primeInput("Type a prime number q", _form2, _valor2),
+                    primeInput("Type a prime number q", _form2, _valor2, 0),
                     SizedBox(
                       height: 36,
                     ),
-                    primeInput("Type the e value", _form3, _valor3),
+                    primeInput("Type the e value", _form3, _valor3, 1),
                     Container(
                       alignment: Alignment.bottomCenter,
                       margin: EdgeInsets.only(top: 24),

@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -25,7 +27,35 @@ class _DecryptPageState extends State<DecryptPage> {
   var isLoading = false;
   var decrypted = '';
 
-  primeInput(String placeholder, final form, final valor) {
+  primeValidate(value) {
+    if (value!.isEmpty) {
+      return "Empty field";
+    } else if (isPrime(BigInt.parse(value)) == 0) {
+      return "The value is not a prime number";
+    } else {
+      return null;
+    }
+  }
+
+  coprimeValidate(value) {
+    if (value!.isEmpty) {
+      print(BigInt.parse(_valor1.text));
+      print(BigInt.parse(_valor2.text));
+      return "Empty field";
+    } else if (_valor1.text.isEmpty || _valor2.text.isEmpty) {
+      return "fill the prime numbers fields";
+    } else if (mdc(
+            BigInt.parse(value),
+            (BigInt.parse(_valor1.text) - BigInt.one) *
+                (BigInt.parse(_valor2.text) - BigInt.one)) !=
+        BigInt.one) {
+      return "The value is not a coprime number";
+    } else {
+      return null;
+    }
+  }
+
+  primeInput(String placeholder, final form, final valor, int isCoprime) {
     return Form(
         key: form,
         child: TextFormField(
@@ -39,20 +69,16 @@ class _DecryptPageState extends State<DecryptPage> {
               labelText: placeholder,
               prefixIcon: Icon(Icons.numbers)),
           validator: (value) {
-            if (value!.isEmpty) {
-              return "Empty field";
-            } else if (isPrime(int.parse(value)) == 0) {
-              return "The value is not a prime number";
-            } else {
-              return null;
-            }
+            return (isCoprime == 1)
+                ? coprimeValidate(value)
+                : primeValidate(value);
           },
         ));
   }
 
   _write(String text) async {
     final Directory directory = await getApplicationDocumentsDirectory();
-    final File file = File('${directory.path}/chave_publica.txt');
+    final File file = File('${directory.path}/mensagem_decriptada.txt');
     await file.writeAsString(text);
   }
 
@@ -108,7 +134,9 @@ class _DecryptPageState extends State<DecryptPage> {
 
   // Encrypting
   encrypting() async {
-    if (_form2.currentState!.validate() && _form3.currentState!.validate()) {
+    if (_form2.currentState!.validate() &&
+        _form3.currentState!.validate() &&
+        _form1.currentState!.validate()) {
       print("Funfou");
       setState(() {
         isLoading = true;
@@ -141,7 +169,12 @@ class _DecryptPageState extends State<DecryptPage> {
   pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      print(result.names);
+      File file = File(result.files.single.path!);
+      String texto = await file.readAsString();
+      print(texto);
+      setState(() {
+        _valor0.text = texto;
+      });
     } else {
       print("No file selected");
     }
@@ -194,15 +227,15 @@ class _DecryptPageState extends State<DecryptPage> {
                     SizedBox(
                       height: 36,
                     ),
-                    primeInput("Type the p value", _form1, _valor1),
+                    primeInput("Type the p value", _form1, _valor1, 0),
                     SizedBox(
                       height: 36,
                     ),
-                    primeInput("Type the q value", _form2, _valor2),
+                    primeInput("Type the q value", _form2, _valor2, 0),
                     SizedBox(
                       height: 36,
                     ),
-                    primeInput("Type the e value", _form3, _valor3),
+                    primeInput("Type the e value", _form3, _valor3, 1),
                     Container(
                       alignment: Alignment.bottomCenter,
                       margin: EdgeInsets.only(top: 24),

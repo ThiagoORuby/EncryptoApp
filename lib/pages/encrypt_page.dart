@@ -50,7 +50,7 @@ class _EncryptPageState extends State<EncryptPage> {
 
   _write(String text) async {
     final Directory directory = await getApplicationDocumentsDirectory();
-    final File file = File('${directory.path}/chave_publica.txt');
+    final File file = File('${directory.path}/mensagem_encriptada.txt');
     await file.writeAsString(text);
   }
 
